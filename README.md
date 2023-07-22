@@ -17,3 +17,7 @@ Realizar o clone do projeto
 Para executar o projeto, digite o comando:
 
     go run .
+
+Para executar os testes unitários, utilize a IDE de desenvolvimento:
+
+    exemplo: VS Code
