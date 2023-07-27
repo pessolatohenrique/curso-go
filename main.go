@@ -3,15 +3,26 @@ package main
 import (
 	"curso-go/internal/entity"
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 )
 
 func proccess(channel chan int, wg *sync.WaitGroup) {
-	for i := 0; i < 100000; i++ {
+	for i := 0; i < 10; i++ {
 		channel <- i
 	}
 	close(channel)
+	wg.Done()
+}
+
+func processCarRacing(channel chan int, wg *sync.WaitGroup) {
+	min := 1
+	max := 20
+	for i := 0; i < 10; i++ {
+		randomNumber := rand.Intn(max-min) + min
+		channel <- randomNumber
+	}
 	wg.Done()
 }
 
@@ -19,6 +30,13 @@ func worker(channel chan int, wg *sync.WaitGroup, workerID int) {
 	defer wg.Done()
 	for {
 		fmt.Println("Received on channel", <-channel, " on workerID ", workerID)
+	}
+}
+
+func workerCarRacing(channel chan int, wg *sync.WaitGroup, workerID int) {
+	defer wg.Done()
+	for {
+		fmt.Println("Competitor ", workerID, " runs ", <-channel, " KM")
 	}
 }
 
@@ -39,9 +57,21 @@ func loopConcurrency() {
 	fmt.Println("Duration of execution", duration)
 }
 
+func loopCarRacing() {
+	channel := make(chan int)
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go processCarRacing(channel, &wg)
+	go workerCarRacing(channel, &wg, 1)
+	go workerCarRacing(channel, &wg, 2)
+	wg.Wait()
+}
+
 func main() {
 	// concurrency
-	loopConcurrency()
+	//loopConcurrency()
+	loopCarRacing()
 
 	// order
 	order, err := entity.NewOrder("123", 50, 10)
